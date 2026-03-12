@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Mail, Phone, Calendar, FileText } from "lucide-react"
 import { formatDate, formatDateTime } from "@/lib/utils"
 
@@ -56,8 +57,42 @@ export default function PatientProfilePage() {
 
   if (isLoading || !patient) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="space-y-8 p-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-10 w-10 rounded" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-4" />
+                  <Skeleton className="h-4 flex-1" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-28" />
+              <Skeleton className="h-4 w-24" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Skeleton key={i} className="h-10 w-full" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -130,8 +165,9 @@ export default function PatientProfilePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
-                  <TableHead>Service</TableHead>
+                  <TableHead>Clinic</TableHead>
                   <TableHead>Staff</TableHead>
+                  <TableHead>Service</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
@@ -139,8 +175,9 @@ export default function PatientProfilePage() {
                 {appointments?.map((apt) => (
                   <TableRow key={apt.id}>
                     <TableCell>{formatDateTime(apt.start_time)}</TableCell>
-                    <TableCell>{(apt.service as { name?: string })?.name ?? "—"}</TableCell>
+                    <TableCell>{(apt.clinic_location as { name?: string })?.name ?? "—"}</TableCell>
                     <TableCell>{(apt.staff as { name?: string })?.name ?? "—"}</TableCell>
+                    <TableCell>{(apt.service as { name?: string })?.name ?? "—"}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariant(apt.status)}>{apt.status}</Badge>
                     </TableCell>
@@ -148,7 +185,7 @@ export default function PatientProfilePage() {
                 ))}
                 {(!appointments || appointments.length === 0) && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
                       No appointments yet
                     </TableCell>
                   </TableRow>

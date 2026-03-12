@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ClipboardList, Plus, Pencil, Search } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { useTableState } from "@/lib/use-table-data"
@@ -154,8 +155,15 @@ export default function ServicesPage() {
         </CardHeader>
         <CardContent>
           {isLoading && !result ? (
-            <div className="flex h-32 items-center justify-center">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex gap-4">
+                  <Skeleton className="h-10 flex-1" />
+                  <Skeleton className="h-10 w-20" />
+                  <Skeleton className="h-10 w-24" />
+                  <Skeleton className="h-10 w-16" />
+                </div>
+              ))}
             </div>
           ) : (
             <>

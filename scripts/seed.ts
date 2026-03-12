@@ -1,6 +1,6 @@
 import { config } from "dotenv"
 import { createClient } from "@supabase/supabase-js"
-import { addDays, addHours, subDays } from "date-fns"
+import { addDays, addHours, addMinutes, subDays } from "date-fns"
 
 // Load .env.local (Node/tsx doesn't load it automatically)
 config({ path: ".env.local" })
@@ -138,7 +138,7 @@ async function seed() {
   const staffRoles = ["Physician", "Nurse Practitioner", "RN", "Medical Assistant", "Receptionist"]
   const staffData: { organization_id: string; clinic_location_id: string; name: string; role: string; email: string; phone: string; status: string }[] = []
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 30; i++) {
     const clinic = randomPick(clinics)
     staffData.push({
       organization_id: orgId,
@@ -157,7 +157,7 @@ async function seed() {
     .select("id, clinic_location_id")
 
   if (staffErr) throw staffErr
-  console.log("Created 20 staff members")
+  console.log("Created 30 staff members")
 
   const { data: services, error: servicesErr } = await supabase
     .from("services")
@@ -191,6 +191,7 @@ async function seed() {
   console.log("Created 200 patients")
 
   const statuses: string[] = ["scheduled", "completed", "completed", "completed", "cancelled", "no_show"]
+  const appointmentNotes = ["Follow-up required", "Patient requested morning slot", "Allergy noted", null, null, null]
   const appointmentsData: {
     patient_id: string
     staff_id: string
@@ -199,26 +200,34 @@ async function seed() {
     status: string
     start_time: string
     end_time: string
+    notes?: string | null
+    organization_id?: string
   }[] = []
 
   for (let i = 0; i < 500; i++) {
-    const daysAgo = randomInt(0, 60)
+    const daysAgo = randomInt(-14, 60)
     const baseDate = subDays(new Date(), daysAgo)
     const hour = randomInt(8, 17)
     const startTime = addHours(addDays(baseDate, 0), hour)
-    const endTime = addHours(startTime, 1)
     const clinic = randomPick(clinics)
     const clinicStaff = staff!.filter((s: { clinic_location_id: string }) => s.clinic_location_id === clinic.id)
     const clinician = randomPick(clinicStaff) || staff![0]
+    const serviceIdx = Math.floor(Math.random() * services!.length)
+    const service = services![serviceIdx]
+    const serviceMeta = servicesData[serviceIdx]
+    const duration = serviceMeta?.duration ?? 30
+    const endTime = addMinutes(startTime, duration)
 
     appointmentsData.push({
       patient_id: randomPick(patients!).id,
       staff_id: clinician.id,
       clinic_location_id: clinic.id,
-      service_id: randomPick(services!).id,
+      service_id: (service as { id: string }).id,
       status: randomPick(statuses),
       start_time: startTime.toISOString(),
       end_time: endTime.toISOString(),
+      notes: randomPick(appointmentNotes),
+      organization_id: orgId,
     })
   }
 
@@ -287,15 +296,22 @@ async function seed() {
       continue
     }
     if (authUser.user) {
-      await supabase.from("users").insert({
-        id: authUser.user.id,
-        organization_id: orgId,
-        role: u.role,
-        name: u.name,
-        email: u.email,
-        clinic_location_id: u.clinic_id,
-      })
-      console.log(`Created user: ${u.email} (${u.role})`)
+      const { error: userErr } = await supabase.from("users").upsert(
+        {
+          id: authUser.user.id,
+          organization_id: orgId,
+          role: u.role,
+          name: u.name,
+          email: u.email,
+          clinic_location_id: u.clinic_id,
+        },
+        { onConflict: "id" }
+      )
+      if (userErr) {
+        console.warn(`Could not upsert user ${u.email}:`, userErr.message)
+      } else {
+        console.log(`Created user: ${u.email} (${u.role})`)
+      }
     }
   }
 

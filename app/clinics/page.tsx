@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { useSupabase } from "@/lib/supabaseContext"
-import { useAuth } from "@/lib/auth-context"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSupabase } from "@/lib/supabaseContext";
+import { useAuth } from "@/lib/auth-context";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,12 +12,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { TableContainer } from "@/components/ui/table-container"
-import { DataTablePagination } from "@/components/ui/data-table-pagination"
-import { SortableHeader } from "@/components/ui/sortable-header"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/table";
+import { TableContainer } from "@/components/ui/table-container";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { SortableHeader } from "@/components/ui/sortable-header";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -25,125 +25,155 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Building2, MapPin, Clock, Plus, Pencil, Archive, RotateCcw, Search } from "lucide-react"
-import { useTableState } from "@/lib/use-table-data"
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Building2,
+  MapPin,
+  Clock,
+  Plus,
+  Pencil,
+  Archive,
+  RotateCcw,
+  Search,
+} from "lucide-react";
+import { useTableState } from "@/lib/use-table-data";
 
 export default function ClinicsPage() {
-  const supabase = useSupabase()
-  const { appUser } = useAuth()
-  const queryClient = useQueryClient()
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
+  const supabase = useSupabase();
+  const { appUser } = useAuth();
+  const queryClient = useQueryClient();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [editingClinic, setEditingClinic] = useState<{
-    id: string
-    name: string
-    address: string
-    timezone: string
-    archived: boolean
-  } | null>(null)
-  const [form, setForm] = useState({ name: "", address: "", timezone: "America/New_York" })
+    id: string;
+    name: string;
+    address: string;
+    timezone: string;
+    archived: boolean;
+  } | null>(null);
+  const [form, setForm] = useState({
+    name: "",
+    address: "",
+    timezone: "America/New_York",
+  });
 
-  const { state, setPage, setLimit, setSearch, setSort, setFilter, buildUrl } = useTableState(10)
-  const [searchInput, setSearchInput] = useState("")
-  const archivedFilter = state.filters.archived ?? "all"
+  const { state, setPage, setLimit, setSearch, setSort, setFilter, buildUrl } =
+    useTableState(10);
+  const [searchInput, setSearchInput] = useState("");
+  const archivedFilter = state.filters.archived ?? "all";
 
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput), 300)
-    return () => clearTimeout(t)
-  }, [searchInput, setSearch])
+    const t = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(t);
+  }, [searchInput, setSearch]);
 
   const { data: clinics, isLoading } = useQuery({
     queryKey: ["clinics"],
     queryFn: async () => {
-      if (!supabase) throw new Error("Supabase not configured")
+      if (!supabase) throw new Error("Supabase not configured");
       const { data, error } = await supabase
         .from("clinic_locations")
         .select("*")
-        .order("name")
-      if (error) throw error
-      return data
+        .order("name");
+      if (error) throw error;
+      return data;
     },
-  })
+  });
 
   const { data: tableResult, isLoading: tableLoading } = useQuery({
     queryKey: ["clinics-table", state],
     queryFn: async () => {
-      const res = await fetch(buildUrl("/api/clinics"), { credentials: "include" })
+      const res = await fetch(buildUrl("/api/clinics"), {
+        credentials: "include",
+      });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || "Failed to fetch")
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to fetch");
       }
-      return res.json()
+      return res.json();
     },
-  })
+  });
 
-  const tableClinics = tableResult?.data ?? []
-  const tableTotal = tableResult?.total ?? 0
-  const tableTotalPages = tableResult?.totalPages ?? 0
+  const tableClinics = tableResult?.data ?? [];
+  const tableTotal = tableResult?.total ?? 0;
+  const tableTotalPages = tableResult?.totalPages ?? 0;
 
   const { data: stats } = useQuery({
     queryKey: ["clinic-stats"],
     queryFn: async () => {
-      if (!supabase) return { revenue: [], appointments: [], staff: [] }
+      if (!supabase) return { revenue: [], appointments: [], staff: [] };
       const { data: revenue } = await supabase
         .from("revenue_records")
-        .select("clinic_location_id, amount")
+        .select("clinic_location_id, amount");
       const { data: appointments } = await supabase
         .from("appointments")
-        .select("clinic_location_id, status")
+        .select("clinic_location_id, status");
       const { data: staff } = await supabase
         .from("staff")
-        .select("clinic_location_id")
-      return { revenue: revenue || [], appointments: appointments || [], staff: staff || [] }
+        .select("clinic_location_id");
+      return {
+        revenue: revenue || [],
+        appointments: appointments || [],
+        staff: staff || [],
+      };
     },
-  })
+  });
 
   const getClinicStats = (clinicId: string) => {
-    if (!stats) return { revenue: 0, appointments: 0, staff: 0 }
+    if (!stats) return { revenue: 0, appointments: 0, staff: 0 };
     const revenue = stats.revenue
-      .filter((r) => r.clinic_location_id === clinicId)
-      .reduce((s, r) => s + Number(r.amount), 0)
+      .filter(
+        (r: { clinic_location_id: string; amount: number | string | null }) =>
+          r.clinic_location_id === clinicId,
+      )
+      .reduce(
+        (sum: number, r: { amount: number | string | null }) =>
+          sum + Number(r.amount ?? 0),
+        0,
+      );
     const appointments = stats.appointments.filter(
-      (a) => a.clinic_location_id === clinicId && a.status === "completed"
-    ).length
+      (a: { clinic_location_id: string; status: string }) =>
+        a.clinic_location_id === clinicId && a.status === "completed",
+    ).length;
     const staffCount = stats.staff.filter(
-      (s) => s.clinic_location_id === clinicId
-    ).length
-    return { revenue, appointments, staff: staffCount }
-  }
+      (s: { clinic_location_id: string }) =>
+        s.clinic_location_id === clinicId,
+    ).length;
+    return { revenue, appointments, staff: staffCount };
+  };
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!supabase) throw new Error("Supabase not configured")
+      if (!supabase) throw new Error("Supabase not configured");
       const { error } = await supabase.from("clinic_locations").insert({
         organization_id: appUser!.organization_id,
         name: form.name,
         address: form.address || null,
         timezone: form.timezone,
-      })
-      if (error) throw error
+      });
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clinics"] })
-      queryClient.invalidateQueries({ queryKey: ["clinics-table"] })
-      setCreateOpen(false)
-      setForm({ name: "", address: "", timezone: "America/New_York" })
+      queryClient.invalidateQueries({ queryKey: ["clinics"] });
+      queryClient.invalidateQueries({ queryKey: ["clinics-table"] });
+      setCreateOpen(false);
+      setForm({ name: "", address: "", timezone: "America/New_York" });
     },
-  })
+  });
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      if (!editingClinic || !supabase) return
+      if (!editingClinic || !supabase) return;
       const { error } = await supabase
         .from("clinic_locations")
         .update({
@@ -152,29 +182,52 @@ export default function ClinicsPage() {
           timezone: editingClinic.timezone,
           archived: editingClinic.archived,
         })
-        .eq("id", editingClinic.id)
-      if (error) throw error
+        .eq("id", editingClinic.id);
+      if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clinics"] })
-      queryClient.invalidateQueries({ queryKey: ["clinics-table"] })
-      setEditOpen(false)
-      setEditingClinic(null)
+      queryClient.invalidateQueries({ queryKey: ["clinics"] });
+      queryClient.invalidateQueries({ queryKey: ["clinics-table"] });
+      setEditOpen(false);
+      setEditingClinic(null);
     },
-  })
+  });
 
-  const activeClinics = clinics?.filter((c) => !c.archived) ?? []
-  const isAdmin = appUser?.role === "ADMIN"
-  const isManager = appUser?.role === "CLINIC_MANAGER"
+  const activeClinics =
+    clinics?.filter((c: { archived?: boolean }) => !c.archived) ?? [];
+  const isAdmin = appUser?.role === "ADMIN";
+  const isManager = appUser?.role === "CLINIC_MANAGER";
   const canManageClinic = (clinicId: string) =>
-    isAdmin || (isManager && appUser?.clinic_location_id === clinicId)
+    isAdmin || (isManager && appUser?.clinic_location_id === clinicId);
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      <div className="space-y-8 p-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-4 w-32" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -196,7 +249,10 @@ export default function ClinicsPage() {
               className="pl-9"
             />
           </div>
-          <Select value={archivedFilter} onValueChange={(v) => setFilter("archived", v)}>
+          <Select
+            value={archivedFilter}
+            onValueChange={(v: string) => setFilter("archived", v)}
+          >
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -216,8 +272,8 @@ export default function ClinicsPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {activeClinics.map((clinic) => {
-          const s = getClinicStats(clinic.id)
+        {activeClinics.map((clinic: { id: string; name: string; address?: string | null }) => {
+          const s = getClinicStats(clinic.id);
           return (
             <Card key={clinic.id} className="transition-all hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -238,7 +294,7 @@ export default function ClinicsPage() {
                 </div>
               </CardContent>
             </Card>
-          )
+          );
         })}
       </div>
 
@@ -270,91 +326,103 @@ export default function ClinicsPage() {
               <TableBody>
                 {tableClinics.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-12 text-muted-foreground"
+                    >
                       No clinics found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  tableClinics.map((clinic: { id: string; name: string; address?: string; timezone?: string; archived?: boolean }) => (
-                <TableRow key={clinic.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {clinic.name}
-                      {clinic.archived && (
-                        <Badge variant="secondary">Archived</Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>{clinic.address || "—"}</TableCell>
-                  <TableCell>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {clinic.timezone}
-                    </span>
-                  </TableCell>
-                  <TableCell>{getClinicStats(clinic.id).staff}</TableCell>
-                  <TableCell>
-                    {canManageClinic(clinic.id) ? (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Edit clinic"
-                          onClick={() => {
-                            setEditingClinic({
-                              id: clinic.id,
-                              name: clinic.name,
-                              address: clinic.address || "",
-                              timezone: clinic.timezone || "America/New_York",
-                              archived: clinic.archived || false,
-                            })
-                            setEditOpen(true)
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        {!clinic.archived ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Archive clinic"
-                            onClick={async () => {
-                              if (!supabase) return
-                              await supabase
-                                .from("clinic_locations")
-                                .update({ archived: true })
-                                .eq("id", clinic.id)
-                              queryClient.invalidateQueries({ queryKey: ["clinics"] })
-                              queryClient.invalidateQueries({ queryKey: ["clinics-table"] })
-                            }}
-                          >
-                            <Archive className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            title="Restore clinic"
-                            onClick={async () => {
-                              if (!supabase) return
-                              await supabase
-                                .from("clinic_locations")
-                                .update({ archived: false })
-                                .eq("id", clinic.id)
-                              queryClient.invalidateQueries({ queryKey: ["clinics"] })
-                              queryClient.invalidateQueries({ queryKey: ["clinics-table"] })
-                            }}
-                          >
-                            <RotateCcw className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ) : (
-                      "—"
-                    )}
-                  </TableCell>
-                </TableRow>
-                  ))
+                  tableClinics.map(
+                    (clinic: {
+                      id: string;
+                      name: string;
+                      address?: string;
+                      timezone?: string;
+                      archived?: boolean;
+                    }) => (
+                      <TableRow key={clinic.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {clinic.name}
+                            {clinic.archived && <Badge>Archived</Badge>}
+                          </div>
+                        </TableCell>
+                        <TableCell>{clinic.address || "—"}</TableCell>
+                        <TableCell>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {clinic.timezone}
+                          </span>
+                        </TableCell>
+                        <TableCell>{getClinicStats(clinic.id).staff}</TableCell>
+                        <TableCell>
+                          {canManageClinic(clinic.id) ? (
+                            <div className="flex gap-2">
+                              <Button
+                                title="Edit clinic"
+                                onClick={() => {
+                                  setEditingClinic({
+                                    id: clinic.id,
+                                    name: clinic.name,
+                                    address: clinic.address || "",
+                                    timezone:
+                                      clinic.timezone || "America/New_York",
+                                    archived: clinic.archived || false,
+                                  });
+                                  setEditOpen(true);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              {!clinic.archived ? (
+                                <Button
+                                  title="Archive clinic"
+                                  onClick={async () => {
+                                    if (!supabase) return;
+                                    await supabase
+                                      .from("clinic_locations")
+                                      .update({ archived: true })
+                                      .eq("id", clinic.id);
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["clinics"],
+                                    });
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["clinics-table"],
+                                    });
+                                  }}
+                                >
+                                  <Archive className="h-4 w-4" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  title="Restore clinic"
+                                  onClick={async () => {
+                                    if (!supabase) return;
+                                    await supabase
+                                      .from("clinic_locations")
+                                      .update({ archived: false })
+                                      .eq("id", clinic.id);
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["clinics"],
+                                    });
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["clinics-table"],
+                                    });
+                                  }}
+                                >
+                                  <RotateCcw className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )
                 )}
               </TableBody>
             </Table>
@@ -383,7 +451,9 @@ export default function ClinicsPage() {
               <Input
                 id="name"
                 value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
                 placeholder="Downtown Medical Center"
               />
             </div>
@@ -392,7 +462,9 @@ export default function ClinicsPage() {
               <Input
                 id="address"
                 value={form.address}
-                onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, address: e.target.value }))
+                }
                 placeholder="123 Main St"
               />
             </div>
@@ -401,14 +473,19 @@ export default function ClinicsPage() {
               <Input
                 id="timezone"
                 value={form.timezone}
-                onChange={(e) => setForm((f) => ({ ...f, timezone: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, timezone: e.target.value }))
+                }
                 placeholder="America/New_York"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={() => createMutation.mutate()} disabled={!form.name || createMutation.isPending}>
+            <Button onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => createMutation.mutate()}
+              disabled={!form.name || createMutation.isPending}
+            >
               {createMutation.isPending ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
@@ -419,7 +496,9 @@ export default function ClinicsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit Clinic</DialogTitle>
-            <DialogDescription>Update clinic details or archive</DialogDescription>
+            <DialogDescription>
+              Update clinic details or archive
+            </DialogDescription>
           </DialogHeader>
           {editingClinic && (
             <div className="grid gap-4 py-4">
@@ -428,7 +507,9 @@ export default function ClinicsPage() {
                 <Input
                   value={editingClinic.name}
                   onChange={(e) =>
-                    setEditingClinic((c) => (c ? { ...c, name: e.target.value } : null))
+                    setEditingClinic((c) =>
+                      c ? { ...c, name: e.target.value } : null,
+                    )
                   }
                 />
               </div>
@@ -437,7 +518,9 @@ export default function ClinicsPage() {
                 <Input
                   value={editingClinic.address}
                   onChange={(e) =>
-                    setEditingClinic((c) => (c ? { ...c, address: e.target.value } : null))
+                    setEditingClinic((c) =>
+                      c ? { ...c, address: e.target.value } : null,
+                    )
                   }
                 />
               </div>
@@ -446,7 +529,9 @@ export default function ClinicsPage() {
                 <Input
                   value={editingClinic.timezone}
                   onChange={(e) =>
-                    setEditingClinic((c) => (c ? { ...c, timezone: e.target.value } : null))
+                    setEditingClinic((c) =>
+                      c ? { ...c, timezone: e.target.value } : null,
+                    )
                   }
                 />
               </div>
@@ -457,7 +542,7 @@ export default function ClinicsPage() {
                   value={editingClinic.archived ? "yes" : "no"}
                   onChange={(e) =>
                     setEditingClinic((c) =>
-                      c ? { ...c, archived: e.target.value === "yes" } : null
+                      c ? { ...c, archived: e.target.value === "yes" } : null,
                     )
                   }
                 >
@@ -468,13 +553,16 @@ export default function ClinicsPage() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
-            <Button onClick={() => updateMutation.mutate()} disabled={!editingClinic || updateMutation.isPending}>
+            <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button
+              onClick={() => updateMutation.mutate()}
+              disabled={!editingClinic || updateMutation.isPending}
+            >
               {updateMutation.isPending ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

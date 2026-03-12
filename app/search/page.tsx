@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
 import { useSupabase } from "@/lib/supabaseContext"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Search as SearchIcon } from "lucide-react"
@@ -84,7 +85,14 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <ul className="space-y-2">
                   {results?.patients.map((p) => (
@@ -114,7 +122,14 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-1">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-40" />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <ul className="space-y-2">
                   {results?.staff.map((s) => (
@@ -139,13 +154,21 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                <div className="space-y-3">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="space-y-1">
+                      <Skeleton className="h-4 w-36" />
+                      <Skeleton className="h-3 w-44" />
+                      <Skeleton className="h-5 w-16 rounded-full" />
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <ul className="space-y-2">
                   {results?.appointments.map((apt) => (
                     <li key={apt.id}>
                       <Link
-                        href={`/patients/${apt.patient_id}`}
+                        href={`/appointments`}
                         className="hover:underline text-primary"
                       >
                         {(apt.patient as { first_name?: string; last_name?: string })?.first_name}{" "}

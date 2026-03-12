@@ -8,6 +8,7 @@ import {
   Users,
   UserCog,
   Calendar,
+  CalendarDays,
   BarChart3,
   Settings,
   Stethoscope,
@@ -15,10 +16,12 @@ import {
   Shield,
   ClipboardList,
   Search,
+  Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/lib/auth-context"
 import { Button } from "@/components/ui/button"
+import { NotificationBell } from "@/components/NotificationBell"
 
 function NavItems() {
   const pathname = usePathname()
@@ -26,6 +29,7 @@ function NavItems() {
 
   const baseItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["ADMIN", "CLINIC_MANAGER", "STAFF"] },
+    { href: "/schedule", label: "My Schedule", icon: CalendarDays, roles: ["CLINIC_MANAGER", "STAFF"] },
     { href: "/appointments", label: "Appointments", icon: Calendar, roles: ["ADMIN", "CLINIC_MANAGER", "STAFF"] },
     { href: "/patients", label: "Patients", icon: Users, roles: ["ADMIN", "CLINIC_MANAGER", "STAFF"] },
     { href: "/clinics", label: "Clinics", icon: Building2, roles: ["ADMIN", "CLINIC_MANAGER"] },
@@ -90,6 +94,9 @@ export function Sidebar() {
           <NavItems />
         </nav>
         <div className="border-t border-border p-4 space-y-2">
+          <div className="flex items-center justify-end">
+            <NotificationBell />
+          </div>
           {appUser && (
             <p className="text-xs text-muted-foreground truncate" title={appUser.email}>
               {appUser.name} {appUser.role && `(${appUser.role})`}

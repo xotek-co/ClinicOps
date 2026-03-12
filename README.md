@@ -16,6 +16,7 @@ A modern SaaS platform for private healthcare groups managing multi-location cli
 - **Service Catalog** – Manage services, duration, pricing
 - **Global Search** – Patients, staff, appointments
 - **Reports & Analytics** – Revenue by clinic, appointments per day, no-show rate, staff utilization
+- **AI Analytics Assistant** – Admins ask questions in plain English; AI converts to SQL and returns readable answers
 
 ## Tech Stack
 
@@ -38,6 +39,8 @@ npm install
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` (for seed script and admin API)
+   - `OPENROUTER_API_KEY` (for AI Analytics Assistant - get at openrouter.ai/keys)
+   - `DATABASE_URL` (Supabase DB connection string, for AI Analytics Assistant)
 
 ### 3. Run database migrations
 
@@ -78,6 +81,7 @@ Open [http://localhost:3000](http://localhost:3000). You'll be redirected to `/l
   /login, /signup     – Auth pages
   /dashboard          – Role-specific dashboards
   /admin/users        – User management (Admin)
+  /admin/analytics-assistant – AI chat for clinic analytics (Admin)
   /clinics            – Clinic locations
   /services           – Service catalog (Admin)
   /patients           – Patient directory & profiles
