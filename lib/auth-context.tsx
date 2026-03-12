@@ -13,6 +13,7 @@ export interface AppUser {
   name: string
   email: string
   clinic_location_id: string | null
+  staff_id?: string | null
   is_active: boolean
 }
 
