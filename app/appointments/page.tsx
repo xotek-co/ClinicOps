@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { useSupabase } from "@/lib/supabaseContext"
-import { useAuth } from "@/lib/auth-context"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSupabase } from "@/lib/supabaseContext";
+import { useAuth } from "@/lib/auth-context";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -12,17 +12,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { TableContainer } from "@/components/ui/table-container"
+} from "@/components/ui/table";
+import { TableContainer } from "@/components/ui/table-container";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -30,18 +30,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from "@/components/ui/sheet"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { formatDateTime } from "@/lib/utils"
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { formatDateTime } from "@/lib/utils";
 import {
   Calendar,
   ChevronLeft,
@@ -54,60 +54,69 @@ import {
   XCircle,
   CheckCircle,
   UserX,
-} from "lucide-react"
-import { useState, useEffect } from "react"
-import { format, addDays, startOfWeek, endOfWeek } from "date-fns"
-import { useTableState } from "@/lib/use-table-data"
-import { DataTablePagination } from "@/components/ui/data-table-pagination"
-import { SortableHeader } from "@/components/ui/sortable-header"
+} from "lucide-react";
+import { useState, useEffect } from "react";
+import { format, addDays, startOfWeek, endOfWeek } from "date-fns";
+import { useTableState } from "@/lib/use-table-data";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import { SortableHeader } from "@/components/ui/sortable-header";
 
 type AppointmentRow = {
-  id: string
-  patient_id: string
-  staff_id: string
-  clinic_location_id: string
-  service_id: string | null
-  start_time: string
-  end_time: string
-  status: string
-  notes?: string
-  patient?: { first_name: string; last_name: string; email?: string; phone?: string }
-  staff?: { name?: string }
-  clinic_location?: { name?: string }
-  service?: { name?: string; duration?: number }
-}
+  id: string;
+  patient_id: string;
+  staff_id: string;
+  clinic_location_id: string;
+  service_id: string | null;
+  start_time: string;
+  end_time: string;
+  status: string;
+  notes?: string;
+  patient?: {
+    first_name: string;
+    last_name: string;
+    email?: string;
+    phone?: string;
+  };
+  staff?: { name?: string };
+  clinic_location?: { name?: string };
+  service?: { name?: string; duration?: number };
+};
 
 export default function AppointmentsPage() {
-  const supabase = useSupabase()
-  const { appUser } = useAuth()
-  const queryClient = useQueryClient()
-  const [dateOffset, setDateOffset] = useState(0)
-  const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily")
-  const { state, setPage, setLimit, setSearch, setSort, setFilter, buildUrl } = useTableState(100)
-  const [searchInput, setSearchInput] = useState("")
-  const statusFilter = state.filters.status ?? "all"
-  const clinicFilter = state.filters.clinic_id ?? "all"
-  const staffFilter = state.filters.staff_id ?? "all"
-  const serviceFilter = state.filters.service_id ?? "all"
+  const supabase = useSupabase();
+  const { appUser } = useAuth();
+  const queryClient = useQueryClient();
+  const [dateOffset, setDateOffset] = useState(0);
+  const [viewMode, setViewMode] = useState<"daily" | "weekly">("daily");
+  const { state, setPage, setLimit, setSearch, setSort, setFilter, buildUrl } =
+    useTableState(100);
+  const [searchInput, setSearchInput] = useState("");
+  const statusFilter = state.filters.status ?? "all";
+  const clinicFilter = state.filters.clinic_id ?? "all";
+  const staffFilter = state.filters.staff_id ?? "all";
+  const serviceFilter = state.filters.service_id ?? "all";
 
   useEffect(() => {
-    const t = setTimeout(() => setSearch(searchInput), 300)
-    return () => clearTimeout(t)
-  }, [searchInput, setSearch])
+    const t = setTimeout(() => setSearch(searchInput), 300);
+    return () => clearTimeout(t);
+  }, [searchInput, setSearch]);
 
-  const [scheduleOpen, setScheduleOpen] = useState(false)
-  const [notesOpen, setNotesOpen] = useState(false)
-  const [notesApt, setNotesApt] = useState<{ id: string; notes: string } | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selectedApt, setSelectedApt] = useState<AppointmentRow | null>(null)
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [notesApt, setNotesApt] = useState<{
+    id: string;
+    notes: string;
+  } | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedApt, setSelectedApt] = useState<AppointmentRow | null>(null);
   const [editForm, setEditForm] = useState<{
-    date: string
-    time: string
-    staff_id: string
-    service_id: string
-    notes: string
-  } | null>(null)
-  const [scheduleError, setScheduleError] = useState("")
+    date: string;
+    time: string;
+    staff_id: string;
+    service_id: string;
+    notes: string;
+  } | null>(null);
+  const [scheduleError, setScheduleError] = useState("");
 
   const [scheduleForm, setScheduleForm] = useState({
     patient_id: "",
@@ -117,78 +126,85 @@ export default function AppointmentsPage() {
     date: format(new Date(), "yyyy-MM-dd"),
     time: "09:00",
     notes: "",
-  })
+  });
 
-  const viewDate = addDays(new Date(), dateOffset)
-  const dateStr = format(viewDate, "yyyy-MM-dd")
-  const weekStart = startOfWeek(viewDate, { weekStartsOn: 1 })
-  const weekEnd = endOfWeek(viewDate, { weekStartsOn: 1 })
-  const weekStartStr = format(weekStart, "yyyy-MM-dd")
-  const weekEndStr = format(weekEnd, "yyyy-MM-dd")
+  const viewDate = addDays(new Date(), dateOffset);
+  const dateStr = format(viewDate, "yyyy-MM-dd");
+  const weekStart = startOfWeek(viewDate, { weekStartsOn: 1 });
+  const weekEnd = endOfWeek(viewDate, { weekStartsOn: 1 });
+  const weekStartStr = format(weekStart, "yyyy-MM-dd");
+  const weekEndStr = format(weekEnd, "yyyy-MM-dd");
 
   const { data: clinics } = useQuery({
     queryKey: ["clinics"],
     queryFn: async () => {
-      if (!supabase) return []
+      if (!supabase) return [];
       const { data } = await supabase
         .from("clinic_locations")
         .select("id, name, archived")
-        .order("name")
-      return (data || []).filter((c: { archived?: boolean }) => !c.archived)
+        .order("name");
+      return (data || []).filter((c: { archived?: boolean }) => !c.archived);
     },
-  })
+  });
 
   const { data: patients } = useQuery({
     queryKey: ["patients-list"],
     queryFn: async () => {
-      const res = await fetch("/api/patients?limit=200", { credentials: "include" })
-      if (!res.ok) return []
-      const json = await res.json()
-      return json.data ?? []
+      const res = await fetch("/api/patients?limit=200", {
+        credentials: "include",
+      });
+      if (!res.ok) return [];
+      const json = await res.json();
+      return json.data ?? [];
     },
-  })
+  });
 
   const { data: staffList } = useQuery({
     queryKey: ["staff-list"],
     queryFn: async () => {
-      if (!supabase) return []
+      if (!supabase) return [];
       const { data } = await supabase
         .from("staff")
         .select("id, name, clinic_location_id")
-        .eq("status", "active")
-      return data || []
+        .eq("status", "active");
+      return data || [];
     },
-  })
+  });
 
   const { data: servicesList } = useQuery({
     queryKey: ["services-list"],
     queryFn: async () => {
-      if (!supabase) return []
-      const { data } = await supabase.from("services").select("id, name, duration").order("name")
-      return data || []
+      if (!supabase) return [];
+      const { data } = await supabase
+        .from("services")
+        .select("id, name, duration")
+        .order("name");
+      return data || [];
     },
-  })
+  });
 
   const extraParams: Record<string, string> =
     viewMode === "weekly"
       ? { start_date: weekStartStr, end_date: weekEndStr }
-      : { start_date: dateStr, end_date: dateStr }
+      : { start_date: dateStr, end_date: dateStr };
 
   const { data: appointmentsResult, isLoading } = useQuery({
     queryKey: ["appointments", state, dateStr, weekStartStr, viewMode],
     queryFn: async () => {
-      const res = await fetch(buildUrl("/api/appointments", extraParams), { credentials: "include" })
+      const res = await fetch(buildUrl("/api/appointments", extraParams), {
+        credentials: "include",
+      });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || "Failed to fetch")
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to fetch");
       }
-      return res.json()
+      return res.json();
     },
-  })
+  });
 
-  const appointments: AppointmentRow[] = appointmentsResult?.data ?? []
-  const totalAppointments = appointmentsResult?.total ?? 0
-  const totalPages = appointmentsResult?.totalPages ?? 0
+  const appointments: AppointmentRow[] = appointmentsResult?.data ?? [];
+  const totalAppointments = appointmentsResult?.total ?? 0;
+  const totalPages = appointmentsResult?.totalPages ?? 0;
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -197,16 +213,18 @@ export default function AppointmentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, status }),
         credentials: "include",
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || "Failed to update")
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] } as { queryKey: string[] })
-      setDrawerOpen(false)
-      setSelectedApt(null)
+      queryClient.invalidateQueries({ queryKey: ["appointments"] } as {
+        queryKey: string[];
+      });
+      setDrawerOpen(false);
+      setSelectedApt(null);
     },
-  })
+  });
 
   const updateNotesMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
@@ -215,48 +233,57 @@ export default function AppointmentsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, notes }),
         credentials: "include",
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || "Failed to update")
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] } as { queryKey: string[] })
-      setNotesOpen(false)
-      setNotesApt(null)
-      if (selectedApt) setSelectedApt((a) => (a ? { ...a, notes: notesApt?.notes ?? "" } : null))
+      queryClient.invalidateQueries({ queryKey: ["appointments"] } as {
+        queryKey: string[];
+      });
+      setNotesOpen(false);
+      setNotesApt(null);
+      if (selectedApt)
+        setSelectedApt((a) =>
+          a ? { ...a, notes: notesApt?.notes ?? "" } : null,
+        );
     },
-  })
+  });
 
   const updateAppointmentMutation = useMutation({
     mutationFn: async (payload: {
-      id: string
-      date?: string
-      start_time?: string
-      staff_id?: string
-      service_id?: string
-      notes?: string
+      id: string;
+      date?: string;
+      start_time?: string;
+      staff_id?: string;
+      service_id?: string;
+      notes?: string;
     }) => {
       const res = await fetch("/api/appointments", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         credentials: "include",
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || "Failed to update")
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to update");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] } as { queryKey: string[] })
-      setEditForm(null)
+      queryClient.invalidateQueries({ queryKey: ["appointments"] } as {
+        queryKey: string[];
+      });
+      setEditForm(null);
       if (selectedApt) {
-        queryClient.invalidateQueries({ queryKey: ["appointments"] } as { queryKey: string[] })
+        queryClient.invalidateQueries({ queryKey: ["appointments"] } as {
+          queryKey: string[];
+        });
       }
     },
-  })
+  });
 
   const scheduleMutation = useMutation({
     mutationFn: async () => {
-      setScheduleError("")
+      setScheduleError("");
       const res = await fetch("/api/appointments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -270,16 +297,18 @@ export default function AppointmentsPage() {
           notes: scheduleForm.notes || null,
         }),
         credentials: "include",
-      })
-      const json = await res.json()
+      });
+      const json = await res.json();
       if (!res.ok) {
-        setScheduleError(json.error || "Failed to schedule")
-        throw new Error(json.error)
+        setScheduleError(json.error || "Failed to schedule");
+        throw new Error(json.error);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appointments"] } as { queryKey: string[] })
-      setScheduleOpen(false)
+      queryClient.invalidateQueries({ queryKey: ["appointments"] } as {
+        queryKey: string[];
+      });
+      setScheduleOpen(false);
       setScheduleForm({
         patient_id: "",
         staff_id: "",
@@ -288,69 +317,73 @@ export default function AppointmentsPage() {
         date: format(new Date(), "yyyy-MM-dd"),
         time: "09:00",
         notes: "",
-      })
+      });
     },
-  })
+  });
 
-  const canSchedule = appUser?.role === "ADMIN" || appUser?.role === "CLINIC_MANAGER"
+  const canSchedule =
+    appUser?.role === "ADMIN" || appUser?.role === "CLINIC_MANAGER";
   const canUpdateStatus =
-    appUser?.role === "ADMIN" || appUser?.role === "CLINIC_MANAGER" || appUser?.role === "STAFF"
-  const canEdit = appUser?.role === "ADMIN" || appUser?.role === "CLINIC_MANAGER"
+    appUser?.role === "ADMIN" ||
+    appUser?.role === "CLINIC_MANAGER" ||
+    appUser?.role === "STAFF";
+  const canEdit =
+    appUser?.role === "ADMIN" || appUser?.role === "CLINIC_MANAGER";
 
   const statusVariant = (status: string) => {
     switch (status) {
       case "completed":
-        return "success"
+        return "success";
       case "scheduled":
-        return "default"
+        return "default";
       case "cancelled":
-        return "destructive"
+        return "destructive";
       case "no_show":
-        return "warning"
+        return "warning";
       default:
-        return "secondary"
+        return "secondary";
     }
-  }
+  };
 
   const openDrawer = (apt: AppointmentRow) => {
-    setSelectedApt(apt)
-    setEditForm(null)
-    setDrawerOpen(true)
-  }
+    setSelectedApt(apt);
+    setEditForm(null);
+    setDrawerOpen(true);
+  };
 
   const startEdit = (apt: AppointmentRow) => {
-    const start = new Date(apt.start_time)
+    const start = new Date(apt.start_time);
     setEditForm({
       date: format(start, "yyyy-MM-dd"),
       time: format(start, "HH:mm"),
       staff_id: apt.staff_id,
       service_id: apt.service_id || "",
       notes: apt.notes || "",
-    })
-  }
+    });
+  };
 
-  const hours = Array.from({ length: 11 }, (_, i) => i + 8)
-  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
+  const hours = Array.from({ length: 11 }, (_, i) => i + 8);
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
   const getAppointmentsForSlot = (date: Date, hour: number) => {
-    const slotStart = new Date(date)
-    slotStart.setHours(hour, 0, 0, 0)
-    const slotEnd = new Date(date)
-    slotEnd.setHours(hour + 1, 0, 0, 0)
+    const slotStart = new Date(date);
+    slotStart.setHours(hour, 0, 0, 0);
+    const slotEnd = new Date(date);
+    slotEnd.setHours(hour + 1, 0, 0, 0);
     return appointments.filter((apt) => {
-      const start = new Date(apt.start_time)
+      const start = new Date(apt.start_time);
       return (
         start >= slotStart &&
         start < slotEnd &&
         apt.status !== "cancelled" &&
         format(start, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-      )
-    })
-  }
+      );
+    });
+  };
 
   if (isLoading && !appointmentsResult) {
     return (
-      <div className="space-y-8 p-8">
+      <div className="space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <Skeleton className="h-9 w-48" />
@@ -375,11 +408,11 @@ export default function AppointmentsPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Appointments</h1>
@@ -444,7 +477,10 @@ export default function AppointmentsPage() {
               className="pl-9"
             />
           </div>
-          <Select value={statusFilter} onValueChange={(v) => setFilter("status", v)}>
+          <Select
+            value={statusFilter}
+            onValueChange={(v) => setFilter("status", v)}
+          >
             <SelectTrigger className="w-[130px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -456,7 +492,10 @@ export default function AppointmentsPage() {
               <SelectItem value="no_show">No Show</SelectItem>
             </SelectContent>
           </Select>
-          <Select value={clinicFilter} onValueChange={(v) => setFilter("clinic_id", v)}>
+          <Select
+            value={clinicFilter}
+            onValueChange={(v) => setFilter("clinic_id", v)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Clinic" />
             </SelectTrigger>
@@ -469,9 +508,13 @@ export default function AppointmentsPage() {
               ))}
             </SelectContent>
           </Select>
-          {(appUser?.role === "ADMIN" || appUser?.role === "CLINIC_MANAGER") && (
+          {(appUser?.role === "ADMIN" ||
+            appUser?.role === "CLINIC_MANAGER") && (
             <>
-              <Select value={staffFilter} onValueChange={(v) => setFilter("staff_id", v)}>
+              <Select
+                value={staffFilter}
+                onValueChange={(v) => setFilter("staff_id", v)}
+              >
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Staff" />
                 </SelectTrigger>
@@ -484,7 +527,10 @@ export default function AppointmentsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={serviceFilter} onValueChange={(v) => setFilter("service_id", v)}>
+              <Select
+                value={serviceFilter}
+                onValueChange={(v) => setFilter("service_id", v)}
+              >
                 <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Service" />
                 </SelectTrigger>
@@ -519,15 +565,14 @@ export default function AppointmentsPage() {
           {viewMode === "daily" ? (
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">Daily view</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Daily view
+                </p>
                 <div className="max-h-[500px] overflow-y-auto rounded-lg border">
                   {hours.map((hour) => {
-                    const slotApts = getAppointmentsForSlot(viewDate, hour)
+                    const slotApts = getAppointmentsForSlot(viewDate, hour);
                     return (
-                      <div
-                        key={hour}
-                        className="flex border-b last:border-b-0"
-                      >
+                      <div key={hour} className="flex border-b last:border-b-0">
                         <div className="w-16 shrink-0 border-r bg-muted/30 px-2 py-2 text-sm font-medium">
                           {hour}:00
                         </div>
@@ -544,7 +589,9 @@ export default function AppointmentsPage() {
                                   : "—"}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                {(apt.service as { name?: string })?.name || "—"} •{" "}
+                                {(apt.service as { name?: string })?.name ||
+                                  "—"}{" "}
+                                •{" "}
                                 {(apt.staff as { name?: string })?.name || "—"}
                               </p>
                               <p className="text-xs text-muted-foreground">
@@ -555,12 +602,14 @@ export default function AppointmentsPage() {
                           ))}
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
               <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">List view</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  List view
+                </p>
                 <TableContainer>
                   <Table>
                     <TableHeader>
@@ -577,7 +626,8 @@ export default function AppointmentsPage() {
                         .filter((a) => a.status !== "cancelled")
                         .sort(
                           (a, b) =>
-                            new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+                            new Date(a.start_time).getTime() -
+                            new Date(b.start_time).getTime(),
                         )
                         .map((apt) => (
                           <TableRow
@@ -600,11 +650,14 @@ export default function AppointmentsPage() {
                               {(apt.service as { name?: string })?.name || "—"}
                             </TableCell>
                             <TableCell>
-                              <Badge variant={statusVariant(apt.status)}>{apt.status}</Badge>
+                              <Badge variant={statusVariant(apt.status)}>
+                                {apt.status}
+                              </Badge>
                             </TableCell>
                           </TableRow>
                         ))}
-                      {appointments.filter((a) => a.status !== "cancelled").length === 0 && (
+                      {appointments.filter((a) => a.status !== "cancelled")
+                        .length === 0 && (
                         <TableRow>
                           <TableCell
                             colSpan={5}
@@ -644,7 +697,7 @@ export default function AppointmentsPage() {
                         {hour}:00
                       </td>
                       {weekDays.map((day) => {
-                        const slotApts = getAppointmentsForSlot(day, hour)
+                        const slotApts = getAppointmentsForSlot(day, hour);
                         return (
                           <td
                             key={day.toISOString()}
@@ -662,15 +715,17 @@ export default function AppointmentsPage() {
                                     : "—"}
                                 </p>
                                 <p className="truncate text-muted-foreground">
-                                  {(apt.service as { name?: string })?.name || "—"}
+                                  {(apt.service as { name?: string })?.name ||
+                                    "—"}
                                 </p>
                                 <p className="truncate text-muted-foreground">
-                                  {(apt.staff as { name?: string })?.name || "—"}
+                                  {(apt.staff as { name?: string })?.name ||
+                                    "—"}
                                 </p>
                               </button>
                             ))}
                           </td>
-                        )
+                        );
                       })}
                     </tr>
                   ))}
@@ -695,15 +750,15 @@ export default function AppointmentsPage() {
           <SheetHeader>
             <SheetTitle>Appointment Details</SheetTitle>
             <SheetDescription>
-              {selectedApt
-                ? formatDateTime(selectedApt.start_time)
-                : "—"}
+              {selectedApt ? formatDateTime(selectedApt.start_time) : "—"}
             </SheetDescription>
           </SheetHeader>
           {selectedApt && (
             <div className="mt-6 space-y-6">
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Patient</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">
+                  Patient
+                </h4>
                 <Link
                   href={`/patients/${selectedApt.patient_id}`}
                   className="text-primary hover:underline"
@@ -713,22 +768,35 @@ export default function AppointmentsPage() {
                     : "—"}
                 </Link>
                 {selectedApt.patient?.email && (
-                  <p className="text-sm text-muted-foreground">{selectedApt.patient.email}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedApt.patient.email}
+                  </p>
                 )}
                 {selectedApt.patient?.phone && (
-                  <p className="text-sm text-muted-foreground">{selectedApt.patient.phone}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {selectedApt.patient.phone}
+                  </p>
                 )}
               </div>
               <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Appointment</h4>
+                <h4 className="text-sm font-medium text-muted-foreground">
+                  Appointment
+                </h4>
                 <p>{(selectedApt.service as { name?: string })?.name || "—"}</p>
                 <p>{(selectedApt.staff as { name?: string })?.name || "—"}</p>
-                <p>{(selectedApt.clinic_location as { name?: string })?.name || "—"}</p>
-                <Badge variant={statusVariant(selectedApt.status)}>{selectedApt.status}</Badge>
+                <p>
+                  {(selectedApt.clinic_location as { name?: string })?.name ||
+                    "—"}
+                </p>
+                <Badge variant={statusVariant(selectedApt.status)}>
+                  {selectedApt.status}
+                </Badge>
               </div>
               {selectedApt.notes && (
                 <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Notes</h4>
+                  <h4 className="text-sm font-medium text-muted-foreground">
+                    Notes
+                  </h4>
                   <p className="text-sm">{selectedApt.notes}</p>
                 </div>
               )}
@@ -742,7 +810,9 @@ export default function AppointmentsPage() {
                       type="date"
                       value={editForm.date}
                       onChange={(e) =>
-                        setEditForm((f) => f ? { ...f, date: e.target.value } : null)
+                        setEditForm((f) =>
+                          f ? { ...f, date: e.target.value } : null,
+                        )
                       }
                     />
                   </div>
@@ -752,7 +822,9 @@ export default function AppointmentsPage() {
                       type="time"
                       value={editForm.time}
                       onChange={(e) =>
-                        setEditForm((f) => f ? { ...f, time: e.target.value } : null)
+                        setEditForm((f) =>
+                          f ? { ...f, time: e.target.value } : null,
+                        )
                       }
                     />
                   </div>
@@ -761,7 +833,7 @@ export default function AppointmentsPage() {
                     <Select
                       value={editForm.staff_id}
                       onValueChange={(v) =>
-                        setEditForm((f) => f ? { ...f, staff_id: v } : null)
+                        setEditForm((f) => (f ? { ...f, staff_id: v } : null))
                       }
                     >
                       <SelectTrigger>
@@ -772,7 +844,8 @@ export default function AppointmentsPage() {
                           ?.filter(
                             (s) =>
                               !selectedApt.clinic_location_id ||
-                              s.clinic_location_id === selectedApt.clinic_location_id
+                              s.clinic_location_id ===
+                                selectedApt.clinic_location_id,
                           )
                           ?.map((s) => (
                             <SelectItem key={s.id} value={s.id}>
@@ -787,7 +860,7 @@ export default function AppointmentsPage() {
                     <Select
                       value={editForm.service_id}
                       onValueChange={(v) =>
-                        setEditForm((f) => f ? { ...f, service_id: v } : null)
+                        setEditForm((f) => (f ? { ...f, service_id: v } : null))
                       }
                     >
                       <SelectTrigger>
@@ -807,7 +880,9 @@ export default function AppointmentsPage() {
                     <Input
                       value={editForm.notes}
                       onChange={(e) =>
-                        setEditForm((f) => f ? { ...f, notes: e.target.value } : null)
+                        setEditForm((f) =>
+                          f ? { ...f, notes: e.target.value } : null,
+                        )
                       }
                       placeholder="Notes..."
                     />
@@ -828,10 +903,7 @@ export default function AppointmentsPage() {
                     >
                       Save
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setEditForm(null)}
-                    >
+                    <Button variant="outline" onClick={() => setEditForm(null)}>
                       Cancel
                     </Button>
                   </div>
@@ -839,7 +911,11 @@ export default function AppointmentsPage() {
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {canEdit && selectedApt.status === "scheduled" && (
-                    <Button variant="outline" size="sm" onClick={() => startEdit(selectedApt)}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => startEdit(selectedApt)}
+                    >
                       Edit
                     </Button>
                   )}
@@ -849,7 +925,10 @@ export default function AppointmentsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          updateStatusMutation.mutate({ id: selectedApt.id, status: "completed" })
+                          updateStatusMutation.mutate({
+                            id: selectedApt.id,
+                            status: "completed",
+                          })
                         }
                         disabled={updateStatusMutation.isPending}
                       >
@@ -860,7 +939,10 @@ export default function AppointmentsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          updateStatusMutation.mutate({ id: selectedApt.id, status: "no_show" })
+                          updateStatusMutation.mutate({
+                            id: selectedApt.id,
+                            status: "no_show",
+                          })
                         }
                         disabled={updateStatusMutation.isPending}
                       >
@@ -871,7 +953,10 @@ export default function AppointmentsPage() {
                         variant="destructive"
                         size="sm"
                         onClick={() =>
-                          updateStatusMutation.mutate({ id: selectedApt.id, status: "cancelled" })
+                          updateStatusMutation.mutate({
+                            id: selectedApt.id,
+                            status: "cancelled",
+                          })
                         }
                         disabled={updateStatusMutation.isPending}
                       >
@@ -884,8 +969,11 @@ export default function AppointmentsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setNotesApt({ id: selectedApt.id, notes: selectedApt.notes || "" })
-                      setNotesOpen(true)
+                      setNotesApt({
+                        id: selectedApt.id,
+                        notes: selectedApt.notes || "",
+                      });
+                      setNotesOpen(true);
                     }}
                   >
                     <FileText className="mr-2 h-4 w-4" />
@@ -912,17 +1000,25 @@ export default function AppointmentsPage() {
               <Label>Patient</Label>
               <Select
                 value={scheduleForm.patient_id}
-                onValueChange={(v) => setScheduleForm((f) => ({ ...f, patient_id: v }))}
+                onValueChange={(v) =>
+                  setScheduleForm((f) => ({ ...f, patient_id: v }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select patient" />
                 </SelectTrigger>
                 <SelectContent>
-                  {patients?.map((p: { id: string; first_name: string; last_name: string }) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.first_name} {p.last_name}
-                    </SelectItem>
-                  ))}
+                  {patients?.map(
+                    (p: {
+                      id: string;
+                      first_name: string;
+                      last_name: string;
+                    }) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.first_name} {p.last_name}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -931,7 +1027,11 @@ export default function AppointmentsPage() {
               <Select
                 value={scheduleForm.clinic_location_id}
                 onValueChange={(v) =>
-                  setScheduleForm((f) => ({ ...f, clinic_location_id: v, staff_id: "" }))
+                  setScheduleForm((f) => ({
+                    ...f,
+                    clinic_location_id: v,
+                    staff_id: "",
+                  }))
                 }
               >
                 <SelectTrigger>
@@ -950,14 +1050,20 @@ export default function AppointmentsPage() {
               <Label>Staff</Label>
               <Select
                 value={scheduleForm.staff_id}
-                onValueChange={(v) => setScheduleForm((f) => ({ ...f, staff_id: v }))}
+                onValueChange={(v) =>
+                  setScheduleForm((f) => ({ ...f, staff_id: v }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select staff" />
                 </SelectTrigger>
                 <SelectContent>
                   {(scheduleForm.clinic_location_id
-                    ? staffList?.filter((s) => s.clinic_location_id === scheduleForm.clinic_location_id)
+                    ? staffList?.filter(
+                        (s) =>
+                          s.clinic_location_id ===
+                          scheduleForm.clinic_location_id,
+                      )
                     : staffList
                   )?.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
@@ -971,7 +1077,9 @@ export default function AppointmentsPage() {
               <Label>Service</Label>
               <Select
                 value={scheduleForm.service_id}
-                onValueChange={(v) => setScheduleForm((f) => ({ ...f, service_id: v }))}
+                onValueChange={(v) =>
+                  setScheduleForm((f) => ({ ...f, service_id: v }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select service" />
@@ -991,7 +1099,9 @@ export default function AppointmentsPage() {
                 <Input
                   type="date"
                   value={scheduleForm.date}
-                  onChange={(e) => setScheduleForm((f) => ({ ...f, date: e.target.value }))}
+                  onChange={(e) =>
+                    setScheduleForm((f) => ({ ...f, date: e.target.value }))
+                  }
                 />
               </div>
               <div className="grid gap-2">
@@ -999,7 +1109,9 @@ export default function AppointmentsPage() {
                 <Input
                   type="time"
                   value={scheduleForm.time}
-                  onChange={(e) => setScheduleForm((f) => ({ ...f, time: e.target.value }))}
+                  onChange={(e) =>
+                    setScheduleForm((f) => ({ ...f, time: e.target.value }))
+                  }
                 />
               </div>
             </div>
@@ -1007,7 +1119,9 @@ export default function AppointmentsPage() {
               <Label>Notes (optional)</Label>
               <Input
                 value={scheduleForm.notes}
-                onChange={(e) => setScheduleForm((f) => ({ ...f, notes: e.target.value }))}
+                onChange={(e) =>
+                  setScheduleForm((f) => ({ ...f, notes: e.target.value }))
+                }
                 placeholder="Notes..."
               />
             </div>
@@ -1035,7 +1149,9 @@ export default function AppointmentsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Appointment Notes</DialogTitle>
-            <DialogDescription>Add or update notes for this appointment</DialogDescription>
+            <DialogDescription>
+              Add or update notes for this appointment
+            </DialogDescription>
           </DialogHeader>
           {notesApt && (
             <div className="grid gap-4 py-4">
@@ -1044,7 +1160,9 @@ export default function AppointmentsPage() {
                 <Input
                   value={notesApt.notes}
                   onChange={(e) =>
-                    setNotesApt((n) => (n ? { ...n, notes: e.target.value } : null))
+                    setNotesApt((n) =>
+                      n ? { ...n, notes: e.target.value } : null,
+                    )
                   }
                   placeholder="Clinical notes..."
                 />
@@ -1058,7 +1176,10 @@ export default function AppointmentsPage() {
             <Button
               onClick={() =>
                 notesApt &&
-                updateNotesMutation.mutate({ id: notesApt.id, notes: notesApt.notes })
+                updateNotesMutation.mutate({
+                  id: notesApt.id,
+                  notes: notesApt.notes,
+                })
               }
               disabled={!notesApt || updateNotesMutation.isPending}
             >
@@ -1068,5 +1189,5 @@ export default function AppointmentsPage() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

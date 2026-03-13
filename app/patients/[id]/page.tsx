@@ -57,7 +57,7 @@ export default function PatientProfilePage() {
 
   if (isLoading || !patient) {
     return (
-      <div className="space-y-8 p-8">
+      <div className="space-y-8">
         <div className="flex items-center gap-4">
           <Skeleton className="h-10 w-10 rounded" />
           <div className="space-y-2">
@@ -108,7 +108,7 @@ export default function PatientProfilePage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-8">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/patients">

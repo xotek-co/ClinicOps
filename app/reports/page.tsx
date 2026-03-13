@@ -133,7 +133,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Reports</h1>
@@ -168,22 +168,28 @@ export default function ReportsPage() {
             </p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartDataArray} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="week"
-                  tickFormatter={(v) => new Date(v).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 12 }} />
-                <Tooltip
-                  formatter={(value: number) => formatCurrency(value)}
-                  labelFormatter={(label) => formatDate(label)}
-                />
-                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[640px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartDataArray} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="week"
+                      tickFormatter={(v) =>
+                        new Date(v).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                      }
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 12 }} />
+                    <Tooltip
+                      formatter={(value: number) => formatCurrency(value)}
+                      labelFormatter={(label) => formatDate(label)}
+                    />
+                    <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -195,20 +201,36 @@ export default function ReportsPage() {
             </p>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartDataArray} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="week"
-                  tickFormatter={(v) => new Date(v).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip labelFormatter={(label) => formatDate(label)} />
-                <Bar dataKey="appointments" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Appointments" />
-                <Bar dataKey="utilization" fill="hsl(var(--chart-2, 142 76% 36%))" radius={[4, 4, 0, 0]} name="Utilization %" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[640px]">
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartDataArray} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis
+                      dataKey="week"
+                      tickFormatter={(v) =>
+                        new Date(v).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                      }
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip labelFormatter={(label) => formatDate(label)} />
+                    <Bar
+                      dataKey="appointments"
+                      fill="hsl(var(--primary))"
+                      radius={[4, 4, 0, 0]}
+                      name="Appointments"
+                    />
+                    <Bar
+                      dataKey="utilization"
+                      fill="hsl(var(--chart-2, 142 76% 36%))"
+                      radius={[4, 4, 0, 0]}
+                      name="Utilization %"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>

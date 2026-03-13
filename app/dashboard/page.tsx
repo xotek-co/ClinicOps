@@ -159,7 +159,7 @@ export default function DashboardPage() {
 
   if (orgLoading || isLoading) {
     return (
-      <div className="space-y-8 p-8">
+      <div className="space-y-8">
         <div className="space-y-2">
           <Skeleton className="h-9 w-48" />
           <Skeleton className="h-4 w-80" />
@@ -213,7 +213,7 @@ export default function DashboardPage() {
 
   if (!org) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-8">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-semibold">No organization found</h2>
         <p className="text-center text-muted-foreground max-w-md">
           Run the database migrations and seed script. See README for setup instructions.
@@ -224,7 +224,7 @@ export default function DashboardPage() {
 
   if (!stats) {
     return (
-      <div className="space-y-8 p-8">
+      <div className="space-y-8">
         <div className="space-y-2">
           <Skeleton className="h-9 w-48" />
           <Skeleton className="h-4 w-80" />
@@ -239,7 +239,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-8">
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">

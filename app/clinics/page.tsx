@@ -202,7 +202,7 @@ export default function ClinicsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-8 p-8">
+      <div className="space-y-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
             <Skeleton className="h-9 w-32" />
@@ -231,7 +231,7 @@ export default function ClinicsPage() {
   }
 
   return (
-    <div className="space-y-8 p-8">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-3xl font-bold tracking-tight">Clinics</h1>
